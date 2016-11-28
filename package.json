@@ -1,0 +1,28 @@
+{
+  "name": "cabotage",
+  "version": "0.1.0",
+  "description": "Cabotage enables real time data subscriptions to graphQL APIs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CMDco/Cabotage.git"
+  },
+  "keywords": [
+    "graphql",
+    "api",
+    "realtime",
+    "rest",
+    "restful",
+    "middleware",
+    "data"
+  ],
+  "author": "Martin-Ting",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/CMDco/Cabotage/issues"
+  },
+  "homepage": "https://github.com/CMDco/Cabotage#readme"
+}
