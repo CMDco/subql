@@ -1,7 +1,11 @@
+const graphql = require('graphql'); 
+
 const db = {};
 
 const mroot = {};
 const otypes = {};
+const operations = {};
+var storedSchema = '';
 
 
 function registerResolver(...rootFn){
@@ -46,8 +50,35 @@ function registerType(classFn, ...uniqKeys){
   };
 }
 
+function parseSchema(schema) {
+  if (!schema) {
+    throw new Error("parseSchema :: parseSchema must take in a schema string");
+  }
+  storedSchema = schema;
+  let schemaSource = new graphql.Source(schema);
+  let parsedSchema = graphql.parse(schema);
+
+  parsedSchema.definitions.forEach((ele) => {
+    if (ele.name.value === 'Query' || ele.name.value === 'Mutation') {
+      ele.fields.forEach((field) => {
+        operations[field.name.value] = {
+          name: field.name.value,
+          type: ele.name.value,
+          value: field.type.name.value
+        }
+      });
+    }
+  });
+}
+
+function handleSubscribe(query, socketid) {
+  
+}
+
 module.exports = {
   registerResolver,
   getRoot,
   registerType,
+  parseSchema,
+  handleSubscribe
 };
