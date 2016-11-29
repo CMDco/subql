@@ -79,7 +79,9 @@ function handleSubscribe(query, socketid) {
         let uniqKeys = otypes[operations[resolverName].value].keys;
         let uniqIdentifier = uniqKeys.reduce( (acc, curr) => {
           return acc + curr + ret[curr];
-        }, "");
+        }, '');
+        db[uniqIdentifier] = !db[uniqIdentifier] ? [socketid] : [...db[uniqIdentifier], socketid];
+        return ret;
       }
     }
   });
