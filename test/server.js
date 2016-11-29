@@ -3,7 +3,7 @@ var graphqlHTTP = require('express-graphql');
 var app = express();
 var server = require('http').Server(app);
 var { buildSchema } = require('graphql');
-var { parseSchema } = require('../src/cabotage.js');
+var { parseSchema, registerResolver, registerType, getRoot } = require('../src/cabotage.js');
 var { setup } = require('../src/sockets.js');
  
 parseSchema(`
@@ -60,32 +60,59 @@ class Message {
   }
 }
 
+registerType(Message, 'id', 'author');
 // Maps username to content
 var fakeDatabase = {};
 
-var root = {
-  getMessage: function ({id}) {
-    if (!fakeDatabase[id]) {
-      throw new Error('no message exists with id ' + id);
-    }
-    return new Message(id, fakeDatabase[id]);
-  },
-  createMessage: function ({input}) {
-    // Create a random id for our "database".
-    var id = require('crypto').randomBytes(10).toString('hex');
+// var root = {
+//   getMessage: function ({id}) {
+//     if (!fakeDatabase[id]) {
+//       throw new Error('no message exists with id ' + id);
+//     }
+//     return new Message(id, fakeDatabase[id]);
+//   },
+//   createMessage: function ({input}) {
+//     // Create a random id for our "database".
+//     var id = require('crypto').randomBytes(10).toString('hex');
 
-    fakeDatabase[id] = input;
-    return new Message(id, input);
-  },
-  updateMessage: function ({id, input}) {
-    if (!fakeDatabase[id]) {
-      throw new Error('no message exists with id ' + id);
-    }
-    // This replaces all old data, but some apps might want partial update.
-    fakeDatabase[id] = input;
-    return new Message(id, input);
-  },
+//     fakeDatabase[id] = input;
+//     return new Message(id, input);
+//   },
+//   updateMessage: function ({id, input}) {
+//     if (!fakeDatabase[id]) {
+//       throw new Error('no message exists with id ' + id);
+//     }
+//     // This replaces all old data, but some apps might want partial update.
+//     fakeDatabase[id] = input;
+//     return new Message(id, input);
+//   },
+// }
+
+function getMessage({id}) {
+  if (!fakeDatabase[id]) {
+    throw new Error('no message exists with id ' + id);
+  }
+  return new Message(id, fakeDatabase[id]);
 }
+
+function createMessage({input}) {
+  // Create a random id for our "database".
+  var id = require('crypto').randomBytes(10).toString('hex');
+
+  fakeDatabase[id] = input;
+  return new Message(id, input);
+}
+
+function updateMessage({input}) {
+  // Create a random id for our "database".
+  var id = require('crypto').randomBytes(10).toString('hex');
+
+  fakeDatabase[id] = input;
+  return new Message(id, input);
+}
+
+registerResolver(getMessage, createMessage, updateMessage);
+var root = getRoot();
 
 app.use('/graphql', graphqlHTTP({
   schema: schema,
