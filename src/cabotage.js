@@ -7,7 +7,6 @@ const otypes = {};
 const operations = {};
 var storedSchema = '';
 
-
 function registerResolver(...rootFn){
   if(!rootFn){
     throw new Error("registerResolver :: registerResolver must take at least one resolver function.")
@@ -72,7 +71,18 @@ function parseSchema(schema) {
 }
 
 function handleSubscribe(query, socketid) {
-  
+  const root = Object.assign({}, getRoot());
+  Object.keys(root).forEach((resolverName) => {
+    if (operations[resolverName].type === 'Query') {
+      root[resolverName] = function (...args) {
+        let ret = root[resolverName](...args);
+        let uniqKeys = otypes[operations[resolverName].value].keys;
+        let uniqIdentifier = uniqKeys.reduce( (acc, curr) => {
+          return acc + curr + ret[curr];
+        }, "");
+      }
+    }
+  });
 }
 
 module.exports = {

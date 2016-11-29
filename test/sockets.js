@@ -7,10 +7,11 @@ function subscribe(uri, query, variables = null, callback) {
     socket.on('init', ({id}) => {
       socketid = id;
       console.log(id);
+      socket.on(socketid, (data) => { callback(data) });
+      socket.emit(socketid, { query });
     });
   }
-  socket.on(socketid, (data) => { callback(data) });
-  socket.emit(socketid, { query });
+
   // var xhr = new XMLHttpRequest();
   // xhr.responseType = 'json';
   // xhr.open("GET", uri, false);
