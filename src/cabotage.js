@@ -1,5 +1,4 @@
 const graphql = require('graphql'); 
-// const { connected } = require('./sockets.js');
 var { connected } = require('./socketdata.js');
 const db = {};
 
@@ -31,6 +30,11 @@ function wrapResolver(fn){
     let uniqIdentifier = uniqKeys.reduce( (acc, curr) => {
       return acc + curr + ret[curr];
     }, "");
+    if(connected[db[uniqIdentifier]] !== undefined){
+      db[uniqIdentifier].forEach((socketID) => {
+        connected[socketID].emit(socketID, `${socketID} data was mutated`);
+      });
+    }
     return ret; 
   }
 }
@@ -82,21 +86,16 @@ function handleSubscribe(query, socketid) {
           return acc + curr + ret[curr];
         }, '');
         db[uniqIdentifier] = !db[uniqIdentifier] ? [socketid] : [...db[uniqIdentifier], socketid];
-        // console.log('db ::', db);
         return ret;
       }
     }
   });
-  // console.log('storeSchema :: ', storedSchema);
-  // console.log(graphql.buildSchema(storedSchema));
-  // console.log('query :: ', query.query);
-  // console.log('root :: ', root);
+
   graphql.graphql(
     graphql.buildSchema(storedSchema),
     query.query,
     root
   ).then((result) => {
-    // console.log(`Result :: ${JSON.stringify(result)}`);
     connected[socketid].emit(socketid, result);
   });
 }
