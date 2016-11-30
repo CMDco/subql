@@ -31,8 +31,6 @@ function wrapResolver(fn){
     let uniqIdentifier = uniqKeys.reduce( (acc, curr) => {
       return acc + curr + ret[curr];
     }, "");
-    console.log(db[uniqIdentifier]);
-    console.log('connected :: ', connected);
     return ret; 
   }
 }
@@ -84,7 +82,7 @@ function handleSubscribe(query, socketid) {
           return acc + curr + ret[curr];
         }, '');
         db[uniqIdentifier] = !db[uniqIdentifier] ? [socketid] : [...db[uniqIdentifier], socketid];
-        console.log('db ::', db);
+        // console.log('db ::', db);
         return ret;
       }
     }
@@ -98,8 +96,8 @@ function handleSubscribe(query, socketid) {
     query.query,
     root
   ).then((result) => {
-    console.log('db :: ', db)
-    console.log(`Result :: ${JSON.stringify(result)}`);
+    // console.log(`Result :: ${JSON.stringify(result)}`);
+    connected[socketid].emit(socketid, result);
   });
 }
 

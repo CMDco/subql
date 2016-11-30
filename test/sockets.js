@@ -28,6 +28,6 @@ function unsubscribe() {
   socket.emit('unsubscribe', { socketid });
 }
 
-subscribe(null, '{ getMessage(id: 0) { id} }', null, function (data) {
+subscribe(null, '{ getMessage(id: 0) { content} }', null, function (data) {
   console.log(data);
 });
