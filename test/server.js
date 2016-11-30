@@ -108,10 +108,11 @@ function createMessage({input}) {
   return new Message(id, input);
 }
 
-function updateMessage({input}) {
-  // Create a random id for our "database".
-  //var id = require('crypto').randomBytes(10).toString('hex');
-
+function updateMessage({id, input}) {
+  if (!fakeDatabase[id]) {
+    throw new Error('no message exists with id ' + id);
+  }
+  // This replaces all old data, but some apps might want partial update.
   fakeDatabase[id] = input;
   return new Message(id, input);
 }
