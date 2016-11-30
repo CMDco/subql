@@ -3,7 +3,7 @@ var http = require('http')
 var { handleSubscribe, handleDisconnect } = require('./cabotage.js');
 var { connected } = require('./socketdata.js');
 
-const debugLog = true;
+const debugLog = false;
 
 function setup(server) { 
   io = require('socket.io')(server);

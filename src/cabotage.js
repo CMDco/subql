@@ -76,6 +76,9 @@ function parseSchema(schema) {
 
 function handleSubscribe(query, socketid) {
   const root = Object.assign({}, getRoot());
+  /**
+   * wrap resolvers with type query to 
+   */
   Object.keys(root).forEach((resolverName) => {
     if (operations[resolverName].type === 'Query') {
       let oldResolver = root[resolverName];
@@ -104,9 +107,11 @@ function handleDisconnect(socketid){
   Object.keys(db).forEach( (uniqIdentifier) => {
     let socketIndex = db[uniqIdentifier].indexOf(socketid);
     if(socketIndex >= 0){
-      console.log(`${db[uniqIdentifier].splice(socketIndex, 1)} removed from db[${uniqIdentifier}]`);
+      db[uniqIdentifier].splice(socketIndex, 1);
     }
   });
+
+  delete connected[socketid];
 }
 
 module.exports = {
