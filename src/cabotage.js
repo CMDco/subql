@@ -31,8 +31,8 @@ function wrapResolver(fn){
       return acc + curr + ret[curr];
     }, "");
     if(connected[db[uniqIdentifier]] !== undefined){
-      db[uniqIdentifier].forEach((socketID) => {
-        connected[socketID].emit(socketID, `${socketID} data was mutated`);
+      db[uniqIdentifier].forEach((socketid) => {
+        connected[socketid].emit(socketid, `${socketid} data was mutated`);
       });
     }
     return ret; 
@@ -100,10 +100,20 @@ function handleSubscribe(query, socketid) {
   });
 }
 
+function handleDisconnect(socketid){
+  Object.keys(db).forEach( (uniqIdentifier) => {
+    let socketIndex = db[uniqIdentifier].indexOf(socketid);
+    if(socketIndex >= 0){
+      console.log(`${db[uniqIdentifier].splice(socketIndex, 1)} removed from db[${uniqIdentifier}]`);
+    }
+  });
+}
+
 module.exports = {
   registerResolver,
   getRoot,
   registerType,
   parseSchema,
-  handleSubscribe
+  handleSubscribe,
+  handleDisconnect
 };
