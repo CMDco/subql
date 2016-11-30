@@ -99,15 +99,12 @@ function getMessage({id}) {
   }
   return new Message(id, fakeDatabase[id]);
 }
-
 function createMessage({input}) {
-  // Create a random id for our "database".
   var id = require('crypto').randomBytes(10).toString('hex');
 
   fakeDatabase[id] = input;
   return new Message(id, input);
 }
-
 function updateMessage({id, input}) {
   if (!fakeDatabase[id]) {
     throw new Error('no message exists with id ' + id);
@@ -116,7 +113,6 @@ function updateMessage({id, input}) {
   fakeDatabase[id] = input;
   return new Message(id, input);
 }
-
 registerResolver(getMessage, createMessage, updateMessage);
 var root = getRoot();
 
