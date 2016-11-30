@@ -62,7 +62,12 @@ class Message {
 
 registerType(Message, 'id', 'author');
 // Maps username to content
-var fakeDatabase = {};
+var fakeDatabase = {
+    0 : {
+      content: "cesar is cool",
+      author: "dean"
+    }
+};
 
 // var root = {
 //   getMessage: function ({id}) {
@@ -105,7 +110,7 @@ function createMessage({input}) {
 
 function updateMessage({input}) {
   // Create a random id for our "database".
-  var id = require('crypto').randomBytes(10).toString('hex');
+  //var id = require('crypto').randomBytes(10).toString('hex');
 
   fakeDatabase[id] = input;
   return new Message(id, input);
