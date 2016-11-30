@@ -1,7 +1,7 @@
 const graphql = require('graphql'); 
 var { connected } = require('./socketdata.js');
-const db = {};
 
+const db = {};
 const mroot = {};
 const otypes = {};
 const operations = {};
@@ -9,14 +9,14 @@ var storedSchema = '';
 
 function registerResolver(...rootFn){
   if(!rootFn){
-    throw new Error("registerResolver :: registerResolver must take at least one resolver function.")
+    throw new Error('registerResolver :: registerResolver must take at least one resolver function.');
   }
-  rootFn.forEach( (fn) => {
+  rootFn.forEach((fn) => {
     if(fn.name.length <= 0){
-      throw new Error("registerResolver :: registerResolver can not take anonymous functions as arguments");
+      throw new Error('registerResolver :: registerResolver can not take anonymous functions as arguments');
     }
     mroot[fn.name] = wrapResolver(fn);
-  } );
+  });
 }
 
 function getRoot(){
@@ -24,14 +24,14 @@ function getRoot(){
 }
 
 function wrapResolver(fn){
-  if(operations[fn.name].type === "Mutation"){
+  if(operations[fn.name].type === 'Mutation'){
     return function (...args){
       let ret = fn(...args);
       if(operations[fn.name].type === 'Mutation'){
         let uniqKeys = otypes[ret.constructor.name].keys;
-        let uniqIdentifier = uniqKeys.reduce( (acc, curr) => {
+        let uniqIdentifier = uniqKeys.reduce((acc, curr) => {
           return acc + curr + ret[curr];
-        }, "");
+        }, '');
         if(connected[db[uniqIdentifier]] !== undefined){
           db[uniqIdentifier].forEach((socketid) => {
             connected[socketid].emit(socketid, `${socketid} data was mutated`);
@@ -48,10 +48,10 @@ function wrapResolver(fn){
 
 function registerType(classFn, ...uniqKeys){
   if(typeof classFn !== 'function'){
-    throw new Error("registerType :: registerType must take in a constructor function as first argument");
+    throw new Error('registerType :: registerType must take in a constructor function as first argument');
   }
   if(!uniqKeys){
-    throw new Error("registerType :: registerType did not recieve any keys as arguments");
+    throw new Error('registerType :: registerType did not recieve any keys as arguments');
   }
   otypes[classFn.name] = {
     name: classFn.name,
@@ -62,7 +62,7 @@ function registerType(classFn, ...uniqKeys){
 
 function parseSchema(schema) {
   if (!schema) {
-    throw new Error("parseSchema :: parseSchema must take in a schema string");
+    throw new Error('parseSchema :: parseSchema must take in a schema string');
   }
   storedSchema = schema;
   let schemaSource = new graphql.Source(schema);
@@ -117,7 +117,6 @@ function handleDisconnect(socketid){
       db[uniqIdentifier].splice(socketIndex, 1);
     }
   });
-
   delete connected[socketid];
 }
 

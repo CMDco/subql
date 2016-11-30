@@ -11,17 +11,18 @@ function subscribe(uri, query, variables = null, callback) {
       socket.emit(socketid, { query });
     });
   }
-
-  // var xhr = new XMLHttpRequest();
-  // xhr.responseType = 'json';
-  // xhr.open("GET", uri, false);
-  // xhr.setRequestHeader("Content-Type", "application/json");
-  // xhr.setRequestHeader("Accept", "application/json");
-  // xhr.send(JSON.stringify({
-  //   query: query,
-  //   variables: variables
-  // }));
-  // return xhr.responseText;
+  /*
+  var xhr = new XMLHttpRequest();
+  xhr.responseType = 'json';
+  xhr.open("GET", uri, false);
+  xhr.setRequestHeader("Content-Type", "application/json");
+  xhr.setRequestHeader("Accept", "application/json");
+  xhr.send(JSON.stringify({
+    query: query,
+    variables: variables
+  }));
+  return xhr.responseText;
+  */
 }
 
 function unsubscribe() { 
