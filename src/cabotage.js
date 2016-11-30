@@ -31,8 +31,8 @@ function wrapResolver(fn){
       return acc + curr + ret[curr];
     }, "");
     if(connected[db[uniqIdentifier]] !== undefined){
-      db[uniqIdentifier].forEach((socketID) => {
-        connected[socketID].emit(socketID, `${socketID} data was mutated`);
+      db[uniqIdentifier].forEach((socketid) => {
+        connected[socketid].emit(socketid, `${socketid} data was mutated`);
       });
     }
     return ret; 
@@ -76,6 +76,9 @@ function parseSchema(schema) {
 
 function handleSubscribe(query, socketid) {
   const root = Object.assign({}, getRoot());
+  /**
+   * wrap resolvers with type query to 
+   */
   Object.keys(root).forEach((resolverName) => {
     if (operations[resolverName].type === 'Query') {
       let oldResolver = root[resolverName];
@@ -100,10 +103,22 @@ function handleSubscribe(query, socketid) {
   });
 }
 
+function handleDisconnect(socketid){
+  Object.keys(db).forEach( (uniqIdentifier) => {
+    let socketIndex = db[uniqIdentifier].indexOf(socketid);
+    if(socketIndex >= 0){
+      db[uniqIdentifier].splice(socketIndex, 1);
+    }
+  });
+
+  delete connected[socketid];
+}
+
 module.exports = {
   registerResolver,
   getRoot,
   registerType,
   parseSchema,
-  handleSubscribe
+  handleSubscribe,
+  handleDisconnect
 };
