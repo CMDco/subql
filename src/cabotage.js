@@ -24,19 +24,26 @@ function getRoot(){
 }
 
 function wrapResolver(fn){
-  return function (...args){
-    let ret = fn(...args);
-    let uniqKeys = otypes[ret.constructor.name].keys;
-    let uniqIdentifier = uniqKeys.reduce( (acc, curr) => {
-      return acc + curr + ret[curr];
-    }, "");
-    if(connected[db[uniqIdentifier]] !== undefined){
-      db[uniqIdentifier].forEach((socketid) => {
-        connected[socketid].emit(socketid, `${socketid} data was mutated`);
-      });
+  if(operations[fn.name].type === "Mutation"){
+    return function (...args){
+      let ret = fn(...args);
+      if(operations[fn.name].type === 'Mutation'){
+        let uniqKeys = otypes[ret.constructor.name].keys;
+        let uniqIdentifier = uniqKeys.reduce( (acc, curr) => {
+          return acc + curr + ret[curr];
+        }, "");
+        if(connected[db[uniqIdentifier]] !== undefined){
+          db[uniqIdentifier].forEach((socketid) => {
+            connected[socketid].emit(socketid, `${socketid} data was mutated`);
+          });
+        }
+      }
+      return ret;
     }
-    return ret; 
+  }else{
+    return fn;
   }
+
 }
 
 function registerType(classFn, ...uniqKeys){
