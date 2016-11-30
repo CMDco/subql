@@ -1,7 +1,8 @@
 # Cabotage
-Cabotage enables real time data subscriptions to GraphQL APIs
+Cabotage enables real time data subscriptions to GraphQL APIs. 
 
-
+## Documentation
+Documentation for Cabotage is available on the [Cabotage Wiki](https://github.com/CMDco/Cabotage/wiki) page
 
 ## Contributing
 ***Commit Style Guide***
