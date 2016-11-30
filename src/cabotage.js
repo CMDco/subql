@@ -34,7 +34,7 @@ function wrapResolver(fn){
         }, '');
         if(connected[db[uniqIdentifier]] !== undefined){
           db[uniqIdentifier].forEach((socketid) => {
-            connected[socketid].emit(socketid, `${socketid} data was mutated`);
+            connected[socketid].emit(socketid, ret);
           });
         }
       }
