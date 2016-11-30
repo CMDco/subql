@@ -1,7 +1,7 @@
 var io;// = require('socket.io');
 var http = require('http')
-const connected = {};
 var { handleSubscribe } = require('./cabotage.js');
+var { connected } = require('./socketdata.js');
 
 function setup(server) { 
   io = require('socket.io')(server);

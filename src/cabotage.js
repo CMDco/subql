@@ -1,5 +1,6 @@
 const graphql = require('graphql'); 
-
+// const { connected } = require('./sockets.js');
+var { connected } = require('./socketdata.js');
 const db = {};
 
 const mroot = {};
@@ -30,7 +31,8 @@ function wrapResolver(fn){
     let uniqIdentifier = uniqKeys.reduce( (acc, curr) => {
       return acc + curr + ret[curr];
     }, "");
-    // db[uniqIdentifier] = ret;
+    console.log(db[uniqIdentifier]);
+    console.log('connected :: ', connected);
     return ret; 
   }
 }
@@ -74,16 +76,30 @@ function handleSubscribe(query, socketid) {
   const root = Object.assign({}, getRoot());
   Object.keys(root).forEach((resolverName) => {
     if (operations[resolverName].type === 'Query') {
+      let oldResolver = root[resolverName];
       root[resolverName] = function (...args) {
-        let ret = root[resolverName](...args);
+        let ret = oldResolver(...args);
         let uniqKeys = otypes[operations[resolverName].value].keys;
-        let uniqIdentifier = uniqKeys.reduce( (acc, curr) => {
+        let uniqIdentifier = uniqKeys.reduce((acc, curr) => {
           return acc + curr + ret[curr];
         }, '');
         db[uniqIdentifier] = !db[uniqIdentifier] ? [socketid] : [...db[uniqIdentifier], socketid];
+        console.log('db ::', db);
         return ret;
       }
     }
+  });
+  // console.log('storeSchema :: ', storedSchema);
+  // console.log(graphql.buildSchema(storedSchema));
+  // console.log('query :: ', query.query);
+  // console.log('root :: ', root);
+  graphql.graphql(
+    graphql.buildSchema(storedSchema),
+    query.query,
+    root
+  ).then((result) => {
+    console.log('db :: ', db)
+    console.log(`Result :: ${JSON.stringify(result)}`);
   });
 }
 
