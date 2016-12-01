@@ -32,18 +32,19 @@ function wrapResolver(fn){
         let uniqIdentifier = uniqKeys.reduce((acc, curr) => {
           return acc + curr + ret[curr];
         }, '');
-        if(connected[db[uniqIdentifier]] !== undefined){
-          db[uniqIdentifier].forEach((socketid) => {
-            connected[socketid].emit(socketid, ret);
-          });
-        }
+        db[uniqIdentifier].forEach((socket) => {
+          if(connected[socket] !== undefined){ // db[uniqIdentifier] is an array
+            db[uniqIdentifier].forEach((socketid) => {
+              connected[socketid].emit(socketid, ret);
+            });
+          }
+        });
       }
       return ret;
     }
   }else{
     return fn;
   }
-
 }
 
 function registerType(classFn, ...uniqKeys){
@@ -83,9 +84,6 @@ function parseSchema(schema) {
 
 function handleSubscribe(query, socketid) {
   const root = Object.assign({}, getRoot());
-  /**
-   * wrap resolvers with type query to 
-   */
   Object.keys(root).forEach((resolverName) => {
     if (operations[resolverName].type === 'Query') {
       let oldResolver = root[resolverName];

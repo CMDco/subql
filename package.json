@@ -1,6 +1,6 @@
 {
   "name": "cabotage",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Cabotage enables real time data subscriptions to graphQL APIs",
   "main": "src/cabotage.js",
   "scripts": {
@@ -20,7 +20,11 @@
     "data",
     "node",
     "express",
-    "reactive"
+    "reactive",
+    "socket",
+    "sockets",
+    "socketio",
+    "socket.io"
   ],
   "author": "Martin-Ting",
   "license": "GPL-3.0",
