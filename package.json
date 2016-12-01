@@ -1,6 +1,6 @@
 {
   "name": "cabotage",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Cabotage enables real time data subscriptions to graphQL APIs",
   "main": "src/cabotage.js",
   "scripts": {
