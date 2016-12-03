@@ -118,6 +118,23 @@ function handleDisconnect(socketid){
   delete connected[socketid];
 }
 
+function triggerType(typename, obj){
+  if(otypes[typename] === undefined){
+    throw new Error(`triggerType :: There exists no registerd type named ${typename}`);
+  }
+  let uniqKeys = otypes[typename].keys;
+  let uniqIdentifier = uniqKeys.reduce((acc, curr) => {
+    return acc + curr + obj[curr];
+  }, '');
+  db[uniqIdentifier].forEach((socket) => {
+    if(connected[socket] !== undefined){
+      db[uniqIdentifier].forEach((socketid) => {
+        connected[socketid].emit(socketid, obj);
+      });
+    }
+  });
+}
+
 module.exports = {
   registerResolver,
   getRoot,
