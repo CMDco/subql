@@ -43,7 +43,6 @@ function wrapResolver(fn){
   }else{
     return fn;
   }
-
 }
 
 function registerType(classFn, ...uniqKeys){
