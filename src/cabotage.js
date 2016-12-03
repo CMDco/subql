@@ -28,15 +28,7 @@ function wrapResolver(fn){
     return function (...args){
       let ret = fn(...args);
       if(operations[fn.name].type === 'Mutation'){
-        let uniqKeys = otypes[ret.constructor.name].keys;
-        let uniqIdentifier = uniqKeys.reduce((acc, curr) => {
-          return acc + curr + ret[curr];
-        }, '');
-        if(connected[db[uniqIdentifier]] !== undefined){
-          db[uniqIdentifier].forEach((socketid) => {
-            connected[socketid].socket.emit(socketid, ret);
-          });
-        }
+        triggerType(ret.constructor.name, ret)
       }
       return ret;
     }
