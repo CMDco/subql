@@ -32,13 +32,11 @@ function wrapResolver(fn){
         let uniqIdentifier = uniqKeys.reduce((acc, curr) => {
           return acc + curr + ret[curr];
         }, '');
-        db[uniqIdentifier].forEach((socket) => {
-          if(connected[socket] !== undefined){ // db[uniqIdentifier] is an array
-            db[uniqIdentifier].forEach((socketid) => {
-              connected[socketid].emit(socketid, ret);
-            });
-          }
-        });
+        if(connected[db[uniqIdentifier]] !== undefined){
+          db[uniqIdentifier].forEach((socketid) => {
+            connected[socketid].socket.emit(socketid, ret);
+          });
+        }
       }
       return ret;
     }
@@ -84,6 +82,12 @@ function parseSchema(schema) {
 
 function handleSubscribe(query, socketid) {
   const root = Object.assign({}, getRoot());
+  connected[socketid].query = query.query
+  
+  /**
+   * wrap resolvers with type query to 
+   */
+  // this is the only place where the query is handled 
   Object.keys(root).forEach((resolverName) => {
     if (operations[resolverName].type === 'Query') {
       let oldResolver = root[resolverName];
@@ -104,7 +108,7 @@ function handleSubscribe(query, socketid) {
     query.query,
     root
   ).then((result) => {
-    connected[socketid].emit(socketid, result);
+    connected[socketid].socket.emit(socketid, result);
   });
 }
 
