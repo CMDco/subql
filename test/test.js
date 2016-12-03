@@ -4,7 +4,6 @@ const expect = chai.expect;
 describe('Cabotage Tests', () => {
   describe('Unit Test :: registerResolver', () => {
     it('should throw an error when no arguments are passed in.', done => {
-      expect('test1').to.equal('test1');
       done();
     });
     it('should throw an error when anonymous functions are passed in', done => {
