@@ -145,5 +145,6 @@ module.exports = {
   registerType,
   parseSchema,
   handleSubscribe,
-  handleDisconnect
+  handleDisconnect,
+  triggerType
 };
