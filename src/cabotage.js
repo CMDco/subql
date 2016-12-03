@@ -28,15 +28,7 @@ function wrapResolver(fn){
     return function (...args){
       let ret = fn(...args);
       if(operations[fn.name].type === 'Mutation'){
-        let uniqKeys = otypes[ret.constructor.name].keys;
-        let uniqIdentifier = uniqKeys.reduce((acc, curr) => {
-          return acc + curr + ret[curr];
-        }, '');
-        if(connected[db[uniqIdentifier]] !== undefined){
-          db[uniqIdentifier].forEach((socketid) => {
-            connected[socketid].socket.emit(socketid, ret);
-          });
-        }
+        triggerType(ret.constructor.name, ret)
       }
       return ret;
     }
@@ -84,19 +76,12 @@ function handleSubscribe(query, socketid) {
   const root = Object.assign({}, getRoot());
   connected[socketid].query = query.query
   
-  /**
-   * wrap resolvers with type query to 
-   */
-  // this is the only place where the query is handled 
   Object.keys(root).forEach((resolverName) => {
     if (operations[resolverName].type === 'Query') {
       let oldResolver = root[resolverName];
       root[resolverName] = function (...args) {
         let ret = oldResolver(...args);
-        let uniqKeys = otypes[operations[resolverName].value].keys;
-        let uniqIdentifier = uniqKeys.reduce((acc, curr) => {
-          return acc + curr + ret[curr];
-        }, '');
+        let uniqIdentifier = generateUniqueIdentifier(operations[resolverName].value, ret);
         db[uniqIdentifier] = !db[uniqIdentifier] ? [socketid] : [...db[uniqIdentifier], socketid];
         return ret;
       }
@@ -126,10 +111,7 @@ function triggerType(typename, obj){
   if(otypes[typename] === undefined){
     throw new Error(`triggerType :: There exists no registerd type named ${typename}`);
   }
-  let uniqKeys = otypes[typename].keys;
-  let uniqIdentifier = uniqKeys.reduce((acc, curr) => {
-    return acc + curr + obj[curr];
-  }, '');
+  let uniqIdentifier = generateUniqueIdentifier(typename, obj);
   db[uniqIdentifier].forEach((socket) => {
     if(connected[socket] !== undefined){
       db[uniqIdentifier].forEach((socketid) => {
@@ -137,6 +119,13 @@ function triggerType(typename, obj){
       });
     }
   });
+}
+
+function generateUniqueIdentifier(typename, obj){
+  let uniqKeys = otypes[typename].keys;
+  return typename + uniqKeys.reduce((acc, curr) => {
+    return acc + curr + obj[curr];
+  }, '');
 }
 
 module.exports = {
