@@ -8,7 +8,7 @@ const debugLog = false;
 function setup(server) { 
   io = require('socket.io')(server);
   io.on('connection', function (socket) {
-    connected[socket.id] = socket;
+    connected[socket.id] = { socket };
     socket.emit('init', { id: socket.id });
     socket.on(socket.id, function (query) {
       debug(`socket.on(${socket.id}) :: [${socket.id}] made subscription request`);
