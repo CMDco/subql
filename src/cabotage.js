@@ -58,7 +58,6 @@ function parseSchema(schema) {
   storedSchema = schema;
   let schemaSource = new graphql.Source(schema);
   let parsedSchema = graphql.parse(schema);
-
   parsedSchema.definitions.forEach((ele) => {
     if (ele.name.value === 'Query' || ele.name.value === 'Mutation') {
       ele.fields.forEach((field) => {
@@ -71,11 +70,29 @@ function parseSchema(schema) {
     }
   });
 }
-
+function findFields(obj, store) {
+  var collection = obj.definitions[0].selectionSet.selections
+  function findFieldshelper(val, store) {
+    store[val.name.value] = []
+    val.selectionSet.selections.forEach(field => { 
+      if (field.selectionSet) {
+        store[val.name.value].push(findFieldshelper(field, {}))
+      }
+      else store[val.name.value].push(field.name.value)
+    });
+    return store
+   }
+  collection.forEach((val) => {
+    findFieldshelper(val, store)
+  });
+ }
 function handleSubscribe(query, socketid) {
+  
   const root = Object.assign({}, getRoot());
   connected[socketid].query = query.query
-  
+  const parseQuery = graphql.parse(query.query);
+  connected[socketid].operationFields = {};
+  findFields(parseQuery, connected[socketid].operationFields)
   Object.keys(root).forEach((resolverName) => {
     if (operations[resolverName].type === 'Query') {
       let oldResolver = root[resolverName];
