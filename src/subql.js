@@ -85,15 +85,14 @@ function findFields(obj, store) {
   collection.forEach((val) => {
     findFieldshelper(val, store)
   });
+  return store;
  }
 function handleSubscribe(query, socketid) {
   
   const root = Object.assign({}, getRoot());
   connected[socketid].query = query.query
   const parseQuery = graphql.parse(query.query);
-  connected[socketid].operationFields = {};
-  findFields(parseQuery, connected[socketid].operationFields)
-  console.log(`this is the connected object :: ${JSON.stringify(connected, null, 2)}`)
+  connected[socketid].operationFields = findFields(parseQuery, {})
   Object.keys(root).forEach((resolverName) => {
     if (operations[resolverName].type === 'Query') {
       let oldResolver = root[resolverName];
@@ -133,7 +132,21 @@ function triggerType(typename, obj){
   db[uniqIdentifier].forEach((socket) => {
     if(connected[socket] !== undefined){
       db[uniqIdentifier].forEach((socketid) => {
-        connected[socketid].socket.emit(socketid, obj);
+        var typeOfObj = obj.constructor.name;
+        var resolverNames = Object.keys(connected[socketid].operationFields);
+        console.log(`this is operation fields :: ${JSON.stringify(connected[socketid].operationFields, null, 2)}`)
+        var matchedResolve;
+        resolverNames.forEach((resolver) => {
+         if (operations[resolver].value === typeOfObj) matchedResolve = resolver;
+        });
+        var retObjectTemplate = {};
+        retObjectTemplate.data = {};
+        retObjectTemplate.data[matchedResolve] = {};
+        var fields = connected[socketid].operationFields[matchedResolve]
+        fields.forEach((a) => {
+          retObjectTemplate.data[matchedResolve][a] = obj[a];
+        });
+        connected[socketid].socket.emit(socketid, retObjectTemplate);
       });
     }
   });

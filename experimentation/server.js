@@ -16,6 +16,10 @@ parseSchema(`
     id: ID!
     content: String
     author: String
+    date: Date
+  }
+  type Date {
+    day: Int
   }
 
   type Query {
@@ -39,8 +43,12 @@ var schema = buildSchema(`
     id: ID!
     content: String
     author: String
+    date: Date
   }
-
+  
+  type Date{
+    day: Int
+  }
   type Query {
     getMessage(id: ID!): Message
   }
@@ -59,8 +67,13 @@ class Message {
     this.author = author;
   }
 }
-
+class Date { 
+  constructor(day){
+    this.day = day;
+  }
+}
 registerType(Message, 'id', 'author');
+retgisterType(Date, '');
 // Maps username to content
 var fakeDatabase = {
     0 : {
