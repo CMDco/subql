@@ -64,7 +64,9 @@ function parseSchema(schema) {
         operations[field.name.value] = {
           name: field.name.value,
           type: ele.name.value,
-          value: field.type.name.value
+          // for List Types, field.type.kind defines a list type and field.type.type.kind defines the named type
+          value: field.type.kind === "ListType" ? field.type.type.name.value : field.type.name.value,
+          kind: field.type.kind
         }
       });
     }
@@ -87,7 +89,6 @@ function findFields(obj, store) {
   });
  }
 function handleSubscribe(query, socketid) {
-  
   const root = Object.assign({}, getRoot());
   connected[socketid].query = query.query
   const parseQuery = graphql.parse(query.query);
