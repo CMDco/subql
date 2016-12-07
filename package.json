@@ -1,14 +1,14 @@
 {
-  "name": "cabotage",
-  "version": "0.0.7",
+  "name": "subql",
+  "version": "0.0.1",
   "description": "Cabotage enables real time data subscriptions to graphQL APIs",
-  "main": "src/cabotage.js",
+  "main": "src/subql.js",
   "scripts": {
     "test": "mocha"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/CMDco/Cabotage.git"
+    "url": "git+https://github.com/CMDco/subql.git"
   },
   "keywords": [
     "graphql",
@@ -29,9 +29,9 @@
   "author": "Martin-Ting",
   "license": "GPL-3.0",
   "bugs": {
-    "url": "https://github.com/CMDco/Cabotage/issues"
+    "url": "https://github.com/CMDco/subql/issues"
   },
-  "homepage": "https://github.com/CMDco/Cabotage#readme",
+  "homepage": "https://github.com/CMDco/subql#readme",
   "dependencies": {
     "body-parser": "^1.15.2",
     "express": "^4.14.0",

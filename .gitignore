@@ -35,3 +35,10 @@ jspm_packages
 
 # Optional REPL history
 .node_repl_history
+
+# folders to ignore
+test
+# experimentation  # leave this in for git
+
+# files to ignore
+situation.js

@@ -38,6 +38,7 @@ jspm_packages
 
 # folders to ignore
 test
+experimentation
 
 # files to ignore
 situation.js
