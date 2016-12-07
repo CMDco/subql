@@ -93,6 +93,7 @@ function handleSubscribe(query, socketid) {
   const parseQuery = graphql.parse(query.query);
   connected[socketid].operationFields = {};
   findFields(parseQuery, connected[socketid].operationFields)
+  console.log(`this is the connected object :: ${JSON.stringify(connected, null, 2)}`)
   Object.keys(root).forEach((resolverName) => {
     if (operations[resolverName].type === 'Query') {
       let oldResolver = root[resolverName];
@@ -132,7 +133,7 @@ function triggerType(typename, obj){
   db[uniqIdentifier].forEach((socket) => {
     if(connected[socket] !== undefined){
       db[uniqIdentifier].forEach((socketid) => {
-        connected[socketid].emit(socketid, obj);
+        connected[socketid].socket.emit(socketid, obj);
       });
     }
   });
