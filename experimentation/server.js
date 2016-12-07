@@ -5,8 +5,7 @@ var server = require('http').Server(app);
 var { buildSchema } = require('graphql');
 var { parseSchema, registerResolver, registerType, getRoot } = require('../src/subql.js');
 var { setup } = require('../src/sockets.js');
- 
-parseSchema(`
+var clientSchema = `
   input MessageInput {
     content: String
     author: String
@@ -16,8 +15,13 @@ parseSchema(`
     id: ID!
     content: String
     author: String
+    date: Date
   }
-
+  
+  type Date{
+    day: Int
+    random: String
+  }
   type Query {
     getMessage(id: ID!): Message
   }
@@ -26,30 +30,11 @@ parseSchema(`
     createMessage(input: MessageInput): Message
     updateMessage(id: ID!, input: MessageInput): Message
   }
-`);
+`;
+parseSchema(clientSchema);
 
 // Construct a schema, using GraphQL schema language
-var schema = buildSchema(`
-  input MessageInput {
-    content: String
-    author: String
-  }
-
-  type Message {
-    id: ID!
-    content: String
-    author: String
-  }
-
-  type Query {
-    getMessage(id: ID!): Message
-  }
-
-  type Mutation {
-    createMessage(input: MessageInput): Message
-    updateMessage(id: ID!, input: MessageInput): Message
-  }
-`);
+var schema = buildSchema(clientSchema);
 
 // If Message had any complex fields, we'd put them on this object.
 class Message {
@@ -57,10 +42,18 @@ class Message {
     this.id = id;
     this.content = content;
     this.author = author;
+    this.date = new Date(1);
   }
 }
-
+class Date { 
+  constructor(day){
+    this.day = day;
+    this.random = 'alksfjasdhfjkashfdk';
+  }
+}
 registerType(Message, 'id', 'author');
+registerType(Date, '');
+
 // Maps username to content
 var fakeDatabase = {
     0 : {
@@ -103,6 +96,7 @@ function createMessage({input}) {
   var id = require('crypto').randomBytes(10).toString('hex');
 
   fakeDatabase[id] = input;
+  fakeDatabase[id].date = new Date(1);
   return new Message(id, input);
 }
 function updateMessage({id, input}) {
