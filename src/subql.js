@@ -88,6 +88,7 @@ function findFields(obj, store) {
     findFieldshelper(val, store)
   });
  }
+
 function handleSubscribe(query, socketid) {
   const root = Object.assign({}, getRoot());
   connected[socketid].query = query.query
@@ -95,6 +96,10 @@ function handleSubscribe(query, socketid) {
   connected[socketid].operationFields = {};
   findFields(parseQuery, connected[socketid].operationFields)
   Object.keys(root).forEach((resolverName) => {
+    if(operations[resolverName].kind === 'ListType'){
+      console.log('handleSubscribe :: got a ListType query');
+      //TODO: do logic here
+    }
     if (operations[resolverName].type === 'Query') {
       let oldResolver = root[resolverName];
       root[resolverName] = function (...args) {
