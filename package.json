@@ -1,7 +1,7 @@
 {
   "name": "subql",
   "version": "0.0.1",
-  "description": "Cabotage enables real time data subscriptions to graphQL APIs",
+  "description": "SubQL enables real time data subscriptions to graphQL APIs",
   "main": "src/subql.js",
   "scripts": {
     "test": "mocha"
@@ -24,7 +24,8 @@
     "socket",
     "sockets",
     "socketio",
-    "socket.io"
+    "socket.io",
+    "cabotage"
   ],
   "author": "Martin-Ting",
   "license": "GPL-3.0",
