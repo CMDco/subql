@@ -1,7 +1,27 @@
 const chai = require('chai'); 
-const expect = chai.expect;
+const sinon = require('sinon');
+const sinonChai = require('sinon-chai');
 
-describe('Cabotage Tests', () => {
+const {
+  parse,
+  validate,
+} = require('graphql'); 
+
+const {
+  registerResolver,
+  getRoot,
+  registerType,
+  parseSchema,
+  handleSubscribe,
+  handleDisconnect,
+  triggerType
+} = require('../src/subql.js');
+
+chai.use(sinonChai);
+const expect = chai.expect;
+const assert = chai.assert;
+
+describe('SubQL Tests', () => {
   describe('Unit Test :: registerResolver', () => {
     it('should throw an error when no arguments are passed in.', done => {
       done();
@@ -14,13 +34,13 @@ describe('Cabotage Tests', () => {
     });
   });
 
-  describe('Unit Test :: getRoot', () =>{
-    it('should return a root object', done =>{
+  describe('Unit Test :: getRoot', () => {
+    it('should return a root object', done => {
       done();
     });
   });
 
-  describe('Unit Test :: wrapResolver', () =>{
+  describe('Unit Test :: wrapResolver', () => {
     it('should wrap functions according to type', done => {
       done();
     });
@@ -37,7 +57,7 @@ describe('Cabotage Tests', () => {
       done();
     });
   });
-  describe('Unit Test :: handleDisconnect', ()=>{
+  describe('Unit Test :: handleDisconnect', () => {
     it('should remove something from connected object', done => {
       done();
     });
@@ -45,12 +65,12 @@ describe('Cabotage Tests', () => {
       done();
     });
   });
-  describe('Unit Test :: triggerType', ()=>{
+  describe('Unit Test :: triggerType', () => {
     it('should trigger socket communications based on type', done => {
       done();
     });
   })
-  describe('Unit Test :: generateUniqueIdentifier', ()=>{
+  describe('Unit Test :: generateUniqueIdentifier', () => {
     it('should generate a Unique Identifier', done => {
       done();
     });
