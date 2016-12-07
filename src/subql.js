@@ -85,14 +85,14 @@ function findFields(obj, store) {
   collection.forEach((val) => {
     findFieldshelper(val, store)
   });
+  return store;
  }
 function handleSubscribe(query, socketid) {
   
   const root = Object.assign({}, getRoot());
   connected[socketid].query = query.query
   const parseQuery = graphql.parse(query.query);
-  connected[socketid].operationFields = {};
-  findFields(parseQuery, connected[socketid].operationFields)
+  connected[socketid].operationFields = findFields(parseQuery, {})
   Object.keys(root).forEach((resolverName) => {
     if (operations[resolverName].type === 'Query') {
       let oldResolver = root[resolverName];
@@ -132,11 +132,45 @@ function triggerType(typename, obj){
   db[uniqIdentifier].forEach((socket) => {
     if(connected[socket] !== undefined){
       db[uniqIdentifier].forEach((socketid) => {
-        connected[socketid].emit(socketid, obj);
+        var returnObject = queryFilter(obj, socketid);
+        connected[socketid].socket.emit(socketid, returnObject);
       });
     }
   });
+
+};
+
+function queryFilter(obj, socketid) {
+  var typeOfObj = obj.constructor.name;
+  var resolverNames = Object.keys(connected[socketid].operationFields);
+  var matchedResolve;
+  resolverNames.forEach((resolver) => {
+    if (operations[resolver].value === typeOfObj) matchedResolve = resolver;
+  });
+  var retObjectTemplate = {};
+  retObjectTemplate.data = {};
+  retObjectTemplate.data[matchedResolve] = {};
+  var fields = connected[socketid].operationFields[matchedResolve]
+  fields.forEach((field) => {
+    if (typeof field === 'object') { 
+      var key = Object.keys(field)[0];
+      retObjectTemplate.data[matchedResolve][key] = nestedQueryHelper(field[key], obj[key], {});
+    }
+    else retObjectTemplate.data[matchedResolve][field] = obj[field];
+  });
+  return retObjectTemplate;
 }
+
+function nestedQueryHelper(fieldArray, resolveObj, resultObj) { 
+  fieldArray.forEach((key) => { 
+    if (typeof key === 'object') { 
+      var fieldKey = Object.keys(key)[0];
+      resultObj[fieldKey] = nestedQueryHelper(key[fieldKey], resolveObj[fieldKey], {})
+    }
+    else resultObj[key] = resolveObj[key];
+  })
+  return resultObj;
+};
 
 function generateUniqueIdentifier(typename, obj){
   if(otypes[typename] === undefined){
