@@ -26,6 +26,6 @@ function subscribe(uri, query, variables = null, callback) {
 function unsubscribe() { 
   socket.emit('unsubscribe', { socketid });
 }
-subscribe(null, '{ getMessage(id: 0) { content author } }', null, function (data) {
+subscribe(null, '{ getMessage(id: 0) { content author date{day} } }', null, function (data) {
   console.log(data);
 });
