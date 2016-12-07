@@ -1,6 +1,6 @@
 var io;
 var http = require('http')
-var { handleSubscribe, handleDisconnect } = require('./cabotage.js');
+var { handleSubscribe, handleDisconnect } = require('./subql.js');
 var { connected } = require('./socketdata.js');
 
 const debugLog = false;

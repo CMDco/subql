@@ -3,7 +3,7 @@ var graphqlHTTP = require('express-graphql');
 var app = express();
 var server = require('http').Server(app);
 var { buildSchema } = require('graphql');
-var { parseSchema, registerResolver, registerType, getRoot } = require('../src/cabotage.js');
+var { parseSchema, registerResolver, registerType, getRoot } = require('../src/subql.js');
 var { setup } = require('../src/sockets.js');
  
 parseSchema(`
