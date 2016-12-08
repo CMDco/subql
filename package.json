@@ -1,6 +1,6 @@
 {
   "name": "subql",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "SubQL enables real time data subscriptions to graphQL APIs",
   "main": "src/subql.js",
   "scripts": {
@@ -35,6 +35,7 @@
   "homepage": "https://github.com/CMDco/subql#readme",
   "dependencies": {
     "graphql": "^0.8.2",
+    "object-hash": "^1.1.5",
     "rxjs": "^5.0.0-rc.5",
     "socket.io": "^1.7.1"
   },
