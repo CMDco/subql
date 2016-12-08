@@ -132,7 +132,7 @@ function triggerType(typename, obj){
   db[uniqIdentifier].forEach((socket) => {
     if(connected[socket] !== undefined){
       db[uniqIdentifier].forEach((socketid) => {
-        var returnObject = queryFilter(obj, socketid);
+        let returnObject = queryFilter(obj, connected[socketid]);
         connected[socketid].socket.emit(socketid, returnObject);
       });
     }
@@ -140,20 +140,20 @@ function triggerType(typename, obj){
 
 };
 
-function queryFilter(obj, socketid) {
-  var typeOfObj = obj.constructor.name;
-  var resolverNames = Object.keys(connected[socketid].operationFields);
-  var matchedResolve;
+function queryFilter(obj, clientObj) {
+  let typeOfObj = obj.constructor.name;
+  let resolverNames = Object.keys(clientObj.operationFields);
+  let matchedResolve;
   resolverNames.forEach((resolver) => {
     if (operations[resolver].value === typeOfObj) matchedResolve = resolver;
   });
-  var retObjectTemplate = {};
+  let retObjectTemplate = {};
   retObjectTemplate.data = {};
   retObjectTemplate.data[matchedResolve] = {};
-  var fields = connected[socketid].operationFields[matchedResolve]
+  let fields = clientObj.operationFields[matchedResolve]
   fields.forEach((field) => {
     if (typeof field === 'object') { 
-      var key = Object.keys(field)[0];
+      let key = Object.keys(field)[0];
       retObjectTemplate.data[matchedResolve][key] = nestedQueryHelper(field[key], obj[key], {});
     }
     else retObjectTemplate.data[matchedResolve][field] = obj[field];
@@ -164,7 +164,7 @@ function queryFilter(obj, socketid) {
 function nestedQueryHelper(fieldArray, resolveObj, resultObj) { 
   fieldArray.forEach((key) => { 
     if (typeof key === 'object') { 
-      var fieldKey = Object.keys(key)[0];
+      let fieldKey = Object.keys(key)[0];
       resultObj[fieldKey] = nestedQueryHelper(key[fieldKey], resolveObj[fieldKey], {})
     }
     else resultObj[key] = resolveObj[key];
