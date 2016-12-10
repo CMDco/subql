@@ -1,7 +1,7 @@
 {
   "name": "subql",
-  "version": "0.0.1",
-  "description": "Cabotage enables real time data subscriptions to graphQL APIs",
+  "version": "0.0.2",
+  "description": "SubQL enables real time data subscriptions to graphQL APIs",
   "main": "src/subql.js",
   "scripts": {
     "test": "mocha"
@@ -24,7 +24,8 @@
     "socket",
     "sockets",
     "socketio",
-    "socket.io"
+    "socket.io",
+    "cabotage"
   ],
   "author": "Martin-Ting",
   "license": "GPL-3.0",
@@ -33,14 +34,18 @@
   },
   "homepage": "https://github.com/CMDco/subql#readme",
   "dependencies": {
-    "body-parser": "^1.15.2",
-    "express": "^4.14.0",
-    "express-graphql": "^0.6.1",
     "graphql": "^0.8.2",
+    "object-hash": "^1.1.5",
+    "rxjs": "^5.0.0-rc.5",
     "socket.io": "^1.7.1"
   },
   "devDependencies": {
+    "body-parser": "^1.15.2",
     "chai": "^3.5.0",
-    "mocha": "^3.2.0"
+    "express": "^4.14.0",
+    "express-graphql": "^0.6.1",
+    "mocha": "^3.2.0",
+    "sinon": "^1.17.6",
+    "sinon-chai": "^2.8.0"
   }
 }

@@ -64,7 +64,9 @@ function parseSchema(schema) {
         operations[field.name.value] = {
           name: field.name.value,
           type: ele.name.value,
-          value: field.type.name.value
+          // for List Types, field.type.kind defines a list type and field.type.type.kind defines the named type
+          value: field.type.kind === "ListType" ? field.type.type.name.value : field.type.name.value,
+          kind: field.type.kind
         }
       });
     }
@@ -87,13 +89,17 @@ function findFields(obj, store) {
   });
   return store;
  }
+
 function handleSubscribe(query, socketid) {
-  
   const root = Object.assign({}, getRoot());
   connected[socketid].query = query.query
   const parseQuery = graphql.parse(query.query);
   connected[socketid].operationFields = findFields(parseQuery, {})
   Object.keys(root).forEach((resolverName) => {
+    if(operations[resolverName].kind === 'ListType'){
+      console.log('handleSubscribe :: got a ListType query');
+      //TODO: do logic here
+    }
     if (operations[resolverName].type === 'Query') {
       let oldResolver = root[resolverName];
       root[resolverName] = function (...args) {
