@@ -27,6 +27,6 @@ function unsubscribe() {
   socket.emit('unsubscribe', { socketid });
 }
 
-subscribe(null, '{ getMessages(id: 0){content, author} }', null, function (data) {
+subscribe(null, '{ getMessages(id: 0, test:"testarg", another:"anotherarg", something:"somethingarg"){content, author} }', null, function (data) {
   console.log(data);
 });
