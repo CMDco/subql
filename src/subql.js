@@ -1,11 +1,14 @@
 const graphql = require('graphql'); 
-var { connected } = require('./socketdata.js');
+const { connected } = require('./socketdata.js');
+const {JobQueue, Job} = require('./jobqueue.js');
 
 const db = {};
 const mroot = {};
 const otypes = {};
 const operations = {};
 var storedSchema = '';
+var jobQueue = new JobQueue();
+jobQueue.addObservable("observable1", (job) => job.runTask(), (err) => console.log(err), () => console.log('complete'));
 
 function registerResolver(...rootFn){
   if(!rootFn){
@@ -24,11 +27,15 @@ function getRoot(){
 }
 
 function wrapResolver(fn){
-  if(operations[fn.name].type === 'Mutation'){
+  /**
+   * wrapResolver will add the trigger functionality to notify clients
+   * for operations of type Mutation and not ListTypes
+   */
+  if(operations[fn.name].type === 'Mutation' && operations[fn.name].kind !== 'ListType'){
     return function (...args){
       let ret = fn(...args);
-      if(operations[fn.name].type === 'Mutation'){
-        triggerType(ret.constructor.name, ret)
+      if(operations[fn.name].type === 'Mutation'){ // TODO is this necesary?
+        triggerType(ret.constructor.name, ret);
       }
       return ret;
     }
@@ -83,12 +90,12 @@ function findFields(obj, store) {
       else store[val.name.value].push(field.name.value)
     });
     return store
-   }
+  }
   collection.forEach((val) => {
     findFieldshelper(val, store)
   });
   return store;
- }
+}
 
 function handleSubscribe(query, socketid) {
   const root = Object.assign({}, getRoot());
@@ -97,10 +104,35 @@ function handleSubscribe(query, socketid) {
   connected[socketid].operationFields = findFields(parseQuery, {})
   Object.keys(root).forEach((resolverName) => {
     if(operations[resolverName].kind === 'ListType'){
-      console.log('handleSubscribe :: got a ListType query');
-      //TODO: do logic here
-    }
-    if (operations[resolverName].type === 'Query') {
+      let queries = parseQuery.definitions.reduce((acc, curr) => {
+        /*if(curr.operation === 'query'){
+          acc = curr;
+        }
+        return acc;*/ // refactored \./
+        return curr.operation === 'query' ? curr : acc;
+      }, {selectionSet: {selections: []}});
+      let currentSelection = queries.selectionSet.selections.reduce( (acc, curr) => {
+        /*if(curr.name.value === resolverName){
+          acc = curr;
+        }
+        return acc;*/ // refactored \./
+        return curr.name.value === resolverName ? curr : acc;
+      }, {});
+      let arguments = currentSelection.arguments;
+      let inputs = arguments.reduce((acc, curr) => {
+        acc[curr.name.value] = curr.value.value;
+        return acc;
+      }, {});
+      jobQueue.addJob(new Job(
+        resolverName + JSON.stringify(inputs),
+        () => {
+          return root[resolverName](inputs);
+        },
+        (result) => {
+          connected[socketid].socket.emit(socketid, result);
+        }
+      ));
+    }else if (operations[resolverName].type === 'Query') {
       let oldResolver = root[resolverName];
       root[resolverName] = function (...args) {
         let ret = oldResolver(...args);
@@ -135,15 +167,17 @@ function triggerType(typename, obj){
     throw new Error(`triggerType :: There exists no registered type named ${typename}`);
   }
   let uniqIdentifier = generateUniqueIdentifier(typename, obj);
-  db[uniqIdentifier].forEach((socket) => {
-    if(connected[socket] !== undefined){
-      db[uniqIdentifier].forEach((socketid) => {
-        let returnObject = queryFilter(obj, connected[socketid]);
-        connected[socketid].socket.emit(socketid, returnObject);
-      });
-    }
-  });
 
+  if(db[uniqIdentifier] !== undefined){
+    db[uniqIdentifier].forEach((socket) => { // TODO this needs refactoring because db[uniqIdentifier].forEach x2?
+      if(connected[socket] !== undefined){
+        db[uniqIdentifier].forEach((socketid) => {
+          var returnObject = queryFilter(obj, socketid);
+          connected[socketid].socket.emit(socketid, returnObject);
+        });
+      }
+    });
+  }
 };
 
 function queryFilter(obj, clientObj) {
