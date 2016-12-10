@@ -162,19 +162,17 @@ function handleDisconnect(socketid){
   delete connected[socketid];
 }
 
-function triggerType(typename, obj){
+function triggerType(typename, resolverResult){
   if(otypes[typename] === undefined){
     throw new Error(`triggerType :: There exists no registered type named ${typename}`);
   }
-  let uniqIdentifier = generateUniqueIdentifier(typename, obj);
+  let uniqIdentifier = generateUniqueIdentifier(typename, resolverResult);
 
-  if(db[uniqIdentifier] !== undefined){
+  if (db[uniqIdentifier] !== undefined) {
     db[uniqIdentifier].forEach((socket) => { // TODO this needs refactoring because db[uniqIdentifier].forEach x2?
-      if(connected[socket] !== undefined){
-        db[uniqIdentifier].forEach((socketid) => {
-          var returnObject = queryFilter(obj, socketid);
-          connected[socketid].socket.emit(socketid, returnObject);
-        });
+      if (connected[socket] !== undefined) {
+        var returnObject = queryFilter(resolverResult, connected[socket]);
+        connected[socket].socket.emit(socket, returnObject);
       }
     });
   }
@@ -183,36 +181,35 @@ function triggerType(typename, obj){
 function queryFilter(obj, clientObj) {
   let typeOfObj = obj.constructor.name;
   let resolverNames = Object.keys(clientObj.operationFields);
-  let matchedResolve;
+  let matchedResolver;
   resolverNames.forEach((resolver) => {
-    if (operations[resolver].value === typeOfObj) matchedResolve = resolver;
+    if (operations[resolver].value === typeOfObj) matchedResolver = resolver;
   });
-  let retObjectTemplate = {};
-  retObjectTemplate.data = {};
-  retObjectTemplate.data[matchedResolve] = {};
-  let fields = clientObj.operationFields[matchedResolve]
+  let retObjectTemplate = { data: {} };
+  retObjectTemplate.data[matchedResolver] = {};
+  let fields = clientObj.operationFields[matchedResolver];
   fields.forEach((field) => {
     if (typeof field === 'object') { 
       let key = Object.keys(field)[0];
-      retObjectTemplate.data[matchedResolve][key] = nestedQueryHelper(field[key], obj[key], {});
+      retObjectTemplate.data[matchedResolver][key] = nestedQueryHelper(field[key], obj[key], {});
     }
-    else retObjectTemplate.data[matchedResolve][field] = obj[field];
+    else retObjectTemplate.data[matchedResolver][field] = obj[field];
   });
   return retObjectTemplate;
 }
 
-function nestedQueryHelper(fieldArray, resolveObj, resultObj) { 
-  fieldArray.forEach((key) => { 
-    if (typeof key === 'object') { 
+function nestedQueryHelper(fieldArray, resolveObj, resultObj) { //TODO can we possibly refactor with similar code in query filter
+  fieldArray.forEach((key) => {
+    if (typeof key === 'object') {
       let fieldKey = Object.keys(key)[0];
-      resultObj[fieldKey] = nestedQueryHelper(key[fieldKey], resolveObj[fieldKey], {})
+      resultObj[fieldKey] = nestedQueryHelper(key[fieldKey], resolveObj[fieldKey], {});
     }
     else resultObj[key] = resolveObj[key];
-  })
+  });
   return resultObj;
-};
+}
 
-function generateUniqueIdentifier(typename, obj){
+function generateUniqueIdentifier(typename, obj) {
   if(otypes[typename] === undefined){
     throw new Error(`generateUniqueIdentifier :: There exists no registered type named ${typename}`);
   }
