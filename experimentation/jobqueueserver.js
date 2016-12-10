@@ -20,7 +20,7 @@ parseSchema(`
 
   type Query {
     getMessage(id: ID!): Message
-    getMessages(id: ID!): [Message]
+    getMessages(id: ID!, test: String, another: String, something: String): [Message]
   }
 
   type Mutation {
@@ -115,7 +115,9 @@ function updateMessage({id, input}) {
   fakeDatabase[id] = input;
   return new Message(id, input);
 }
-function getMessages(){
+//getMessages(id: ID!, test: String, another: String, something: String): [Message]
+function getMessages({id, test, another, something}){
+  // console.log(`Arguments to getMessages\nid: ${id}\ntest: ${test}\nanother: ${another}\nsomething: ${something}`);
   return Object.keys(fakeDatabase).reduce((acc, curr) =>{
     acc.push(fakeDatabase[curr]);
     return acc;
