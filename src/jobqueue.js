@@ -1,59 +1,61 @@
 const Rx = require('rxjs');
-var hash = require('object-hash');
+const hash = require('object-hash');
 
-class JobQueue{
-  constructor(){
+class JobQueue {
+  constructor() {
     this.jobQueue = [];
     this.watchdogs = {};
   }
 
-  addJob(job){
+  addJob(job) {
     this.jobQueue.push(job);
   }
-  takeJob(){
+
+  takeJob() {
     return this.jobQueue.splice(0,1)[0];
   }
-  getJobs(){
+
+  getJobs() {
     return this.jobQueue;
   }
-  countJobs(){
+
+  countJobs() {
     return this.jobQueue.length;
   }
 
-  addObservable(name, callback, errcallback, completecallback, loopback=true, interval = 5000){
-    if(!this.watchdogs[name]){
+  addObservable(name, callback, errCallback, completeCallback, loopback=true, interval = 5000) {
+    if(!this.watchdogs[name]) {
       let subscribeCallback = (intervalTime) => {
-        if(this.jobQueue.length > 0){
+        if(this.jobQueue.length > 0) {
           let currJob = this.takeJob();
           callback(currJob);
-          if(loopback){
+          if(loopback) {
             this.addJob(currJob);
           }
         }
       }
       this.watchdogs[name] = new Rx.Observable.interval(interval);
-      this.watchdogs[name].subscribe(subscribeCallback, errcallback, completecallback);
+      this.watchdogs[name].subscribe(subscribeCallback, errCallback, completeCallback);
     }
     return this.watchdogs[name];
   }
 
-    getObervables(){
+    getObervables() {
     return this.watchdogs;
   }
 
-  countObservables(){
+  countObservables() {
     return Object.keys(this.watchdogs).length;
   }
 }
 
-// takes a name, task and callback(result)
-class Job{
-  constructor(pName, pTask, pCallback){
+class Job {
+  constructor(pName, pTask, pCallback) {
     this.name = pName;
     this.storedTask = pTask;
     this.task = (...args) => { 
       let result = this.storedTask(...args);
-      if(this.diffResult(result, this.lastResult)){
+      if(this.diffResult(result, this.lastResult)) {
         this.callback(result);
         this.lastResult = hash(sortObject(result));
       }
@@ -64,20 +66,25 @@ class Job{
     this.numPolls = 0;
     this.lastResult;
   }
-  getName(){
+
+  getName() {
     return this.name;
   }
-  runTask(...args){
+
+  runTask(...args) {
     return this.task(...args);
   }
-  getTask(){
+
+  getTask() {
     return this.task;
   }
-  getNumPolls(){
+
+  getNumPolls() {
     return this.numPolls;
   }
-  diffResult(newObject, lastHash){
-    if(this.numPolls < 1){
+
+  diffResult(newObject, lastHash) {
+    if(this.numPolls < 1) {
       this.lastResult = hash(sortObject(newObject));
       return false;
     }
@@ -85,36 +92,25 @@ class Job{
   }
 }
 
-//debug method
-function xhandleJob(job, tick){
-  if(tick) console.log(`tick ${tick} ===========================`);
-  console.log(job);
-  console.log(job.name);
-  console.log(job.task);
-}
-
 // Private
-function sortObject(object){  
-    var sortedObj = {},
-        keys = Object.keys(object);
-
-    keys.sort(function(key1, key2){
-        key1 = key1.toLowerCase(), key2 = key2.toLowerCase();
-        if(key1 < key2) return -1;
-        if(key1 > key2) return 1;
-        return 0;
-    });
-
-    for(var index in keys){
-        var key = keys[index];
-        if(typeof object[key] == 'object' && !(object[key] instanceof Array)){
-            sortedObj[key] = sortObject(object[key]);
-        } else {
-            sortedObj[key] = object[key];
-        }
+function sortObject(object) {  
+  let sortedObj = {};
+  let keys = Object.keys(object);
+  keys.sort(function(key1, key2) {
+    key1 = key1.toLowerCase(), key2 = key2.toLowerCase();
+    if(key1 < key2) return -1;
+    if(key1 > key2) return 1;
+    return 0;
+  });
+  for(let index in keys) {
+    let key = keys[index];
+    if(typeof object[key] == 'object' && !(object[key] instanceof Array)) {
+        sortedObj[key] = sortObject(object[key]);
+    } else {
+        sortedObj[key] = object[key];
     }
-
-    return sortedObj;
+  }
+  return sortedObj;
 }
 
-module.exports = {JobQueue, Job};
+module.exports = { JobQueue, Job };
