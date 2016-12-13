@@ -156,7 +156,7 @@ function findFields(parsedQuery, store) {
     });
     return store;
   }
-  collection.forEach((val, i) => {
+  collection.forEach((val) => {
     findFieldshelper(val, store);
   });
   return store;
@@ -191,7 +191,7 @@ function queryFilter(resolverResult, clientObj) {
   let resolverNames = Object.keys(clientObj.operationFields);
   let matchedResolver;
   resolverNames.forEach((resolver) => {
-    if (operations[resolver].value === typeOfObj && operations[resolver].kind === "NamedType") {
+    if(operations[resolver].value === typeOfObj && operations[resolver].kind === "NamedType") {
       matchedResolver = resolver;
     }
   });
