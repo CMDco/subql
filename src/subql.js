@@ -10,52 +10,6 @@ var storedSchema = '';
 var jobQueue = new JobQueue();
 jobQueue.addObservable("observable1", (job) => job.runTask(), (err) => console.log(err), () => console.log('complete'));
 
-function registerResolver(...rootFn) {
-  if(!rootFn) {
-    throw new Error('registerResolver :: registerResolver must take at least one resolver function.');
-  }
-  rootFn.forEach((fn) => {
-    if(fn.name.length <= 0) {
-      throw new Error('registerResolver :: registerResolver can not take anonymous functions as arguments');
-    }
-    mroot[fn.name] = wrapResolver(fn);
-  });
-}
-
-function getRoot() {
-  return mroot;
-}
-
-/**
- * wrapResolver will add the trigger functionality to notify clients
- * for operations of type Mutation and not ListTypes
- */
-function wrapResolver(fn) {
-  if(operations[fn.name].type === 'Mutation' && operations[fn.name].kind !== 'ListType') {
-    return function (...args) {
-      let ret = fn(...args);
-      triggerType(ret.constructor.name, ret);
-      return ret;
-    }
-  } else {
-    return fn;
-  }
-}
-
-function registerType(classFn, ...uniqKeys) {
-  if(typeof classFn !== 'function') {
-    throw new Error('registerType :: registerType must take in a constructor function as first argument');
-  }
-  if(!uniqKeys) {
-    throw new Error('registerType :: registerType did not recieve any keys as arguments');
-  }
-  otypes[classFn.name] = {
-    name: classFn.name,
-    classType: classFn,
-    keys: uniqKeys,
-  };
-}
-
 function parseSchema(schema) {
   if (!schema) {
     throw new Error('parseSchema :: parseSchema must take in a schema string');
@@ -78,26 +32,50 @@ function parseSchema(schema) {
   });
 }
 
-/**
- * Traverses through the parsed query and retrieves all the resolver names (fields)
- */
-function findFields(parsedQuery, store) {
-  let collection = parsedQuery.definitions[0].selectionSet.selections;
-  function findFieldshelper(val, store) {
-    store[val.name.value] = [];
-    val.selectionSet.selections.forEach(field => { 
-      if (field.selectionSet) {
-        store[val.name.value].push(findFieldshelper(field, {}));
-      } else {
-        store[val.name.value].push(field.name.value);
-      }
-    });
-    return store;
+function registerType(classFn, ...uniqKeys) {
+  if(typeof classFn !== 'function') {
+    throw new Error('registerType :: registerType must take in a constructor function as first argument');
   }
-  collection.forEach((val) => {
-    findFieldshelper(val, store);
+  if(!uniqKeys) {
+    throw new Error('registerType :: registerType did not recieve any keys as arguments');
+  }
+  otypes[classFn.name] = {
+    name: classFn.name,
+    classType: classFn,
+    keys: uniqKeys,
+  };
+}
+
+function registerResolver(...rootFn) {
+  if(!rootFn) {
+    throw new Error('registerResolver :: registerResolver must take at least one resolver function.');
+  }
+  rootFn.forEach((fn) => {
+    if(fn.name.length <= 0) {
+      throw new Error('registerResolver :: registerResolver can not take anonymous functions as arguments');
+    }
+    mroot[fn.name] = wrapResolver(fn);
   });
-  return store;
+}
+
+/**
+ * wrapResolver will add the trigger functionality to notify clients
+ * for operations of type Mutation and not ListTypes
+ */
+function wrapResolver(fn) {
+  if(operations[fn.name].type === 'Mutation' && operations[fn.name].kind !== 'ListType') {
+    return function (...args) {
+      let ret = fn(...args);
+      triggerType(ret.constructor.name, ret);
+      return ret;
+    }
+  } else {
+    return fn;
+  }
+}
+
+function getRoot() {
+  return mroot;
 }
 
 /**
@@ -107,11 +85,13 @@ function findFields(parsedQuery, store) {
  */
 function handleSubscribe(query, socketid) {
   const root = Object.assign({}, getRoot());
-  connected[socketid].query = query.query;
   const parseQuery = graphql.parse(query.query);
+  let queryOperations = getOperationNames(parseQuery);
+  connected[socketid].query = query.query;
   connected[socketid].operationFields = findFields(parseQuery, {});
-  console.log(`connect[socketid]: handleSubscribe: ::: ${JSON.stringify(connected[socketid].operationFields, null, 2)}`)
-  Object.keys(root).forEach((resolverName) => {
+
+
+  queryOperations.forEach((resolverName) => {
     if(operations[resolverName].kind === 'ListType') {
       let queries = parseQuery.definitions.reduce((acc, curr) => {
         return curr.operation === 'query' ? curr : acc;
@@ -148,6 +128,40 @@ function handleSubscribe(query, socketid) {
   });
 }
 
+function getOperationNames(parsedQuery){
+  let results = [];
+  parsedQuery.definitions.forEach( (definition) => {
+    if(definition.operation === 'query'){
+      definition.selectionSet.selections.forEach((curr) => {
+        results.push(curr.name.value);
+      });
+    }
+  });
+  return results;
+}
+
+/**
+ * Traverses through the parsed query and retrieves all the resolver names (fields)
+ */
+function findFields(parsedQuery, store) {
+  let collection = parsedQuery.definitions[0].selectionSet.selections;
+  function findFieldshelper(val, store) {
+    store[val.name.value] = [];
+    val.selectionSet.selections.forEach(field => {
+      if (field.selectionSet) {
+        store[val.name.value].push(findFieldshelper(field, {}));
+      } else {
+        store[val.name.value].push(field.name.value);
+      }
+    });
+    return store;
+  }
+  collection.forEach((val, i) => {
+    findFieldshelper(val, store);
+  });
+  return store;
+}
+
 function handleDisconnect(socketid) {
   Object.keys(db).forEach((uniqIdentifier) => {
     let socketIndex = db[uniqIdentifier].indexOf(socketid);
@@ -165,7 +179,7 @@ function triggerType(typename, resolverResult) {
   let uniqIdentifier = generateUniqueIdentifier(typename, resolverResult);
   if(db[uniqIdentifier] !== undefined) {
     db[uniqIdentifier].forEach((socket) => {
-      if(connected[socket] !== undefined) {
+      if (connected[socket] !== undefined) {
         connected[socket].socket.emit(socket, queryFilter(resolverResult, connected[socket]));
       }
     });
@@ -177,7 +191,9 @@ function queryFilter(resolverResult, clientObj) {
   let resolverNames = Object.keys(clientObj.operationFields);
   let matchedResolver;
   resolverNames.forEach((resolver) => {
-    if(operations[resolver].value === typeOfObj) matchedResolver = resolver;
+    if (operations[resolver].value === typeOfObj && operations[resolver].kind === "NamedType") {
+      matchedResolver = resolver;
+    }
   });
   let retObjectTemplate = { data: {} };
   retObjectTemplate.data[matchedResolver] = {};
