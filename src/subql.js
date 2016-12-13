@@ -90,6 +90,7 @@ function handleSubscribe(query, socketid) {
   connected[socketid].query = query.query;
   connected[socketid].operationFields = findFields(parseQuery, {});
 
+
   queryOperations.forEach((resolverName) => {
     if(operations[resolverName].kind === 'ListType') {
       let queries = parseQuery.definitions.reduce((acc, curr) => {
@@ -178,7 +179,7 @@ function triggerType(typename, resolverResult) {
   let uniqIdentifier = generateUniqueIdentifier(typename, resolverResult);
   if(db[uniqIdentifier] !== undefined) {
     db[uniqIdentifier].forEach((socket) => {
-      if(connected[socket] !== undefined) {
+      if (connected[socket] !== undefined) {
         connected[socket].socket.emit(socket, queryFilter(resolverResult, connected[socket]));
       }
     });
@@ -190,7 +191,9 @@ function queryFilter(resolverResult, clientObj) {
   let resolverNames = Object.keys(clientObj.operationFields);
   let matchedResolver;
   resolverNames.forEach((resolver) => {
-    if(operations[resolver].value === typeOfObj) matchedResolver = resolver;
+    if(operations[resolver].value === typeOfObj && operations[resolver].kind === "NamedType") {
+      matchedResolver = resolver;
+    }
   });
   let retObjectTemplate = { data: {} };
   retObjectTemplate.data[matchedResolver] = {};
