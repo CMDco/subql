@@ -28,6 +28,12 @@ function unsubscribe() {
 }
 
 //subscribe(null, '{ getMessages(id: 0, test:"testarg", another:"anotherarg", something:"somethingarg"){content, author} }', null, function (data) {
-subscribe(null, '{ getMessage(id: 0) {content} }', null, function (data) {
+subscribe(null, `
+{
+  getMessage(id: 0){
+    id, content, author
+  }
+}
+`, null, function (data) {
   console.log(data);
 });
