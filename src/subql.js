@@ -127,7 +127,7 @@ function handleSubscribe(query, socketid) {
   });
 }
 
-function getOperationNames(parsedQuery){
+function getOperationNames(parsedQuery) {
   let results = [];
   parsedQuery.definitions.forEach( (definition) => {
     if(definition.operation === 'query'){
