@@ -110,6 +110,7 @@ function handleSubscribe(query, socketid) {
   connected[socketid].query = query.query;
   const parseQuery = graphql.parse(query.query);
   connected[socketid].operationFields = findFields(parseQuery, {});
+  console.log(`connect[socketid]: handleSubscribe: ::: ${JSON.stringify(connected[socketid].operationFields, null, 2)}`)
   Object.keys(root).forEach((resolverName) => {
     if(operations[resolverName].kind === 'ListType') {
       let queries = parseQuery.definitions.reduce((acc, curr) => {
