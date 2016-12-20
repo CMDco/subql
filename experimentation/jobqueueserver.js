@@ -16,11 +16,18 @@ parseSchema(`
     id: ID!
     content: String
     author: String
+    date: Date
+  }
+
+  type Date{
+    month: Int
+    day: Int
+    year: Int
   }
 
   type Query {
     getMessage(id: ID!): Message
-    getMessages(id: ID!, test: String, another: String, something: String): [Message]
+    getMessages: [Message]
   }
 
   type Mutation {
@@ -28,7 +35,7 @@ parseSchema(`
     updateMessage(id: ID!, input: MessageInput): Message
   }
 `);
-
+//(id: ID!, test: String, another: String, something: String)
 // Construct a schema, using GraphQL schema language
 var schema = buildSchema(`
   input MessageInput {
@@ -40,11 +47,18 @@ var schema = buildSchema(`
     id: ID!
     content: String
     author: String
+    date: Date
+  }
+
+  type Date{
+    month: Int
+    day: Int
+    year: Int
   }
 
   type Query {
     getMessage(id: ID!): Message
-    getMessages(id: ID!): [Message]
+    getMessages: [Message]
   }
 
   type Mutation {
@@ -52,22 +66,36 @@ var schema = buildSchema(`
     updateMessage(id: ID!, input: MessageInput): Message
   }
 `);
-
+//(id: ID!)
 // If Message had any complex fields, we'd put them on this object.
 class Message {
   constructor(id, {content, author}) {
     this.id = id;
     this.content = content;
     this.author = author;
+    this.date = new Date(Math.floor(Math.random() * 12), Math.floor(Math.random() * 30), Math.floor(Math.random() * 3000));
+  }
+}
+class Date { 
+  constructor(month, day, year) { 
+    this.month = month;
+    this.day = day;
+    this.year = year;
   }
 }
 
 registerType(Message, 'id', 'author');
+registerType(Date, '')
 // Maps username to content
 var fakeDatabase = {
     0 : {
       content: "cesar is cool",
-      author: "dean"
+      author: "dean",
+      date: {
+        month: 12,
+        day: 13,
+        year: 2016
+      }
     }
 };
 
@@ -116,7 +144,8 @@ function updateMessage({id, input}) {
   return new Message(id, input);
 }
 //getMessages(id: ID!, test: String, another: String, something: String): [Message]
-function getMessages({id, test, another, something}){
+function getMessages() {
+  // {id, test, another, something}
   // console.log(`Arguments to getMessages\nid: ${id}\ntest: ${test}\nanother: ${another}\nsomething: ${something}`);
   return Object.keys(fakeDatabase).reduce((acc, curr) =>{
     acc.push(fakeDatabase[curr]);
