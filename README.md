@@ -1,6 +1,8 @@
 # SubQL
 SubQL enables real time data subscriptions to GraphQL APIs. 
 
+[![npm version](https://badge.fury.io/js/subql.svg)](https://badge.fury.io/js/subql)
+
 ## Installation
 ```npm install --save subql```
 
