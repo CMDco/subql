@@ -1,6 +1,6 @@
 {
   "name": "subql",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "description": "SubQL enables real time data subscriptions to graphQL APIs",
   "main": "src/subql.js",
   "scripts": {
@@ -28,7 +28,7 @@
     "cabotage"
   ],
   "author": "Martin-Ting",
-  "license": "GPL-3.0",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/CMDco/subql/issues"
   },
