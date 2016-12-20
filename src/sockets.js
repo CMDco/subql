@@ -1,7 +1,8 @@
 var io;
 var http = require('http')
-var { handleSubscribe, handleDisconnect } = require('./subql.js');
+var { handleSubscribe, handleDisconnect, getSchema, getRoot} = require('./subql.js');
 var { connected } = require('./socketdata.js');
+const graphql = require('graphql');
 
 const debugLog = false;
 
@@ -18,7 +19,14 @@ function setup(server) {
       handleDisconnect(socket.id);
       debug(`socket.on(disconnect) :: [${socket.id}] disconnected`);
     });
-  }); 
+    socket.on('mutation', (data) => {
+      graphql.graphql(
+        graphql.buildSchema(getSchema()),
+        data.query,
+        getRoot()
+      );
+    });
+  });
 }
 
 function debug(debugStr){
