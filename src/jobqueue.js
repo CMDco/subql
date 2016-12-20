@@ -23,7 +23,7 @@ class JobQueue {
     return this.jobQueue.length;
   }
 
-  addObservable(name, callback, errCallback, completeCallback, loopback=true, interval = 5000) {
+  addObservable(name, callback, errCallback, completeCallback, loopback=true, interval = 100) {
     if(!this.watchdogs[name]) {
       let subscribeCallback = (intervalTime) => {
         if(this.jobQueue.length > 0) {

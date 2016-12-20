@@ -123,7 +123,12 @@ function handleSubscribe(query, socketid) {
     query.query,
     root
   ).then((result) => {
-    connected[socketid].socket.emit(socketid, result);
+    if(connected[socketid]){
+      connected[socketid].socket.emit(socketid, result);
+    }else{
+      // client has disconnected.
+      // TODO add in logic for removing data about disconnected client
+    }
   });
 }
 
