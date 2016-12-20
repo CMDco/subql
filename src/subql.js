@@ -74,6 +74,10 @@ function wrapResolver(fn) {
   }
 }
 
+function getSchema(){
+  return storedSchema;
+}
+
 function getRoot() {
   return mroot;
 }
@@ -239,6 +243,7 @@ function generateUniqueIdentifier(typename, resolverResult) {
 module.exports = {
   registerResolver,
   getRoot,
+  getSchema,
   registerType,
   parseSchema,
   handleSubscribe,

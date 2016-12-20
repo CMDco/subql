@@ -19,7 +19,11 @@ function unsubscribe() {
   socket.emit('unsubscribe', { socketid });
 }
 
-    // subscribe(null, `
+function subql(query){
+  socket.emit('mutation', { query });
+}
+
+    // subscribe('http://localhost:4000/', `
     // {
     //   getMessage(id: 0){
     //     id, content, author
@@ -28,6 +32,7 @@ function unsubscribe() {
     // `, null, function (data) {
     //   console.log(data);
     // });
+
 
 //subscribe(null, '{ getMessages(id: 0, test:"testarg", another:"anotherarg", something:"somethingarg"){content, author} }', null, function (data) {
 

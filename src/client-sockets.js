@@ -16,6 +16,10 @@ function unsubscribe() {
   socket.emit('unsubscribe', { socketid });
 }
 
+function graphql(uri, query, variables, callback){
+  socket.emit('mutation', { query });
+}
+
 subscribe('http://localhost:4000', '{ getMessage(id: 0) { content, author} }', null, function (data) {
   console.log(data);
 });
