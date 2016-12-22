@@ -74,7 +74,7 @@ class Job {
     this.callback = pCallback;
     this.numPolls = 0;
     this.identifier = pIdentifier;
-    this.loopback = (pLoopback === undefined ? true : false);
+    this.loopback = (pLoopback === undefined ? pLoopback : false);
     this.lastResult;
   }
 
