@@ -110,7 +110,9 @@ function handleSubscribe(query, socketid) {
       jobQueue.addJob(new Job(
         resolverName + JSON.stringify(inputs),
         () => root[resolverName](inputs),
-        (result) => connected[socketid].socket.emit(socketid, result)
+        (result) => {
+          connected[socketid].socket.emit(socketid, result.map(val => queryFilter(val, connected[socketid])));
+        }
       ));
     } else if(operations[resolverName].type === 'Query') {
       let oldResolver = root[resolverName];
@@ -200,7 +202,9 @@ function queryFilter(resolverResult, clientObj) {
   let resolverNames = Object.keys(clientObj.operationFields);
   let matchedResolver;
   resolverNames.forEach((resolver) => {
-    if(operations[resolver].value === typeOfObj && operations[resolver].kind === "NamedType") {
+    if (operations[resolver].value === typeOfObj && operations[resolver].kind === "NamedType") {
+      matchedResolver = resolver;
+    } else if(operations[resolver].value === typeOfObj){ 
       matchedResolver = resolver;
     }
   });
@@ -208,9 +212,13 @@ function queryFilter(resolverResult, clientObj) {
   retObjectTemplate.data[matchedResolver] = {};
   let fields = clientObj.operationFields[matchedResolver];
   fields.forEach((field) => {
-    if(typeof field === 'object') { 
+    if (typeof field === 'object') { 
       let key = Object.keys(field)[0];
-      retObjectTemplate.data[matchedResolver][key] = nestedQueryHelper(field[key], resolverResult[key], {});
+      if (!Array.isArray(resolverResult[key])) {
+        retObjectTemplate.data[matchedResolver][key] = nestedQueryHelper(field[key], resolverResult[key], {});
+      } else { 
+        retObjectTemplate.data[matchedResolver][key] = resolverResult[key].map(ele => nestedQueryHelper(field[key], ele, {}));
+      }
     } else {
       retObjectTemplate.data[matchedResolver][field] = resolverResult[field]; 
     }
@@ -222,7 +230,11 @@ function nestedQueryHelper(fieldArray, resolverObj, resultObj) { //TODO can we p
   fieldArray.forEach((key) => {
     if(typeof key === 'object') {
       let fieldKey = Object.keys(key)[0];
-      resultObj[fieldKey] = nestedQueryHelper(key[fieldKey], resolverObj[fieldKey], {});
+      if (!Array.isArray(resolverObj[fieldKey])) {
+        resultObj[fieldKey] = nestedQueryHelper(key[fieldKey], resolverObj[fieldKey], {});
+      } else { 
+        resultObj[fieldKey] = resolverObj[fieldKey].map(ele => nestedQueryHelper(key[fieldKey], ele, {}));
+      }
     } else {
       resultObj[key] = resolverObj[key];
     }
