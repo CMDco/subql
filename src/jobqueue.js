@@ -34,7 +34,7 @@ class JobQueue {
 
   addObservable(name, callback, errCallback, completeCallback, interval = 100) {
     if(!this.watchdogs[name]) {
-      let subscribeCallback = (intervalTime) => {
+      let subscribeCallback = () => {
         if(this.jobQueue.length > 0) {
           let currJob = this.takeJob();
           callback(currJob);
@@ -62,7 +62,7 @@ class Job {
   constructor(pName, pTask, pCallback, pIdentifier, pLoopback) {
     this.name = pName;
     this.storedTask = pTask;
-    this.task = (...args) => { 
+    this.task = (...args) => {
       let result = this.storedTask(...args);
       if(this.diffResult(result, this.lastResult)) {
         this.callback(result);
@@ -74,7 +74,7 @@ class Job {
     this.callback = pCallback;
     this.numPolls = 0;
     this.identifier = pIdentifier;
-    this.loopback = (pLoopback === undefined ? pLoopback : false);
+    this.loopback = (pLoopback !== undefined ? pLoopback : false);
     this.lastResult;
   }
 

@@ -113,10 +113,15 @@ function handleSubscribe(query, socketid) {
       jobQueue.addJob(new Job(
         resolverName + JSON.stringify(inputs),
         () => root[resolverName](inputs),
-        (result) => connected[socketid] !== undefined
-          ? connected[socketid].socket.emit(socketid, result.map(val => queryFilter(val, connected[socketid])))
-          : console.log(`[Job] :: client has disconnected`),
-        socketid
+        (result) => {
+          let filteredResult = result.map(val => queryFilter(val, connected[socketid]));
+          console.log(JSON.stringify(filteredResult, null, 2));
+
+          return connected[socketid] !== undefined
+          ? connected[socketid].socket.emit(socketid, result)
+          : console.log(`[Job] :: client has disconnected`)},
+        socketid,
+        true
       ));
     } else if(operations[resolverName].type === 'Query') {
       let oldResolver = root[resolverName];
