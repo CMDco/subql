@@ -115,7 +115,7 @@ function handleSubscribe(query, socketid) {
         () => root[resolverName](inputs),
         (result) => {
           let mutateddata = { data: {} };
-          mutateddata.data[result[0].constructor.name] = result.map(val => queryFilter(val, connected[socketid]));
+          mutateddata.data[resolverName] = result.map(val => queryFilter(val, connected[socketid]));
           return connected[socketid] !== undefined
             ? connected[socketid].socket.emit(socketid, mutateddata)
           : console.log(`[Job] :: client has disconnected`)},
