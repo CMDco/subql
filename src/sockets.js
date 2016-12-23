@@ -20,11 +20,15 @@ function setup(server) {
       debug(`socket.on(disconnect) :: [${socket.id}] disconnected`);
     });
     socket.on('mutation', (data) => {
+      console.log(`socket event[mutation] :: recieved query from ${socket.id}\n${data}`);
       graphql.graphql(
         graphql.buildSchema(getSchema()),
         data.query,
         getRoot()
-      );
+      ).then((result) => {
+        console.log(`socket event[mutation] :: result for ${socket.id}\n${result}`);
+        console.log(result);
+      });
     });
   });
 }
