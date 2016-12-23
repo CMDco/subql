@@ -9,6 +9,9 @@ const operations = {};
 var storedSchema = '';
 var jobQueue = new JobQueue();
 jobQueue.addObservable("observable1", (job) => job.runTask(), (err) => console.log(err), () => console.log('complete'));
+jobQueue.addObservable("observable2", (job) => job.runTask(), (err) => console.log(err), () => console.log('complete'));
+jobQueue.addObservable("observable3", (job) => job.runTask(), (err) => console.log(err), () => console.log('complete'));
+jobQueue.addObservable("observable4", (job) => job.runTask(), (err) => console.log(err), () => console.log('complete'));
 
 function parseSchema(schema) {
   if (!schema) {
@@ -110,9 +113,10 @@ function handleSubscribe(query, socketid) {
       jobQueue.addJob(new Job(
         resolverName + JSON.stringify(inputs),
         () => root[resolverName](inputs),
-        (result) => {
-          connected[socketid].socket.emit(socketid, result.map(val => queryFilter(val, connected[socketid])));
-        }
+        (result) => connected[socketid] !== undefined
+          ? connected[socketid].socket.emit(socketid, result.map(val => queryFilter(val, connected[socketid])))
+          : console.log(`[Job] :: client has disconnected`),
+        socketid
       ));
     } else if(operations[resolverName].type === 'Query') {
       let oldResolver = root[resolverName];
@@ -174,6 +178,7 @@ function findFields(parsedQuery, store) {
 }
 
 function handleDisconnect(socketid) {
+  jobQueue.removeJob('identifier', socketid);
   Object.keys(db).forEach((uniqIdentifier) => {
     let socketIndex = db[uniqIdentifier].indexOf(socketid);
     if(socketIndex >= 0) {

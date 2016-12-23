@@ -15,6 +15,15 @@ class JobQueue {
     return this.jobQueue.splice(0,1)[0];
   }
 
+  removeJob(attribute, value){
+    for(let i = this.jobQueue.length-1; i >= 0; --i){
+      if(this.jobQueue[i][attribute] === value){
+        this.jobQueue.splice(i, 1);
+      }
+    }
+    return;
+  }
+
   getJobs() {
     return this.jobQueue;
   }
@@ -23,13 +32,13 @@ class JobQueue {
     return this.jobQueue.length;
   }
 
-  addObservable(name, callback, errCallback, completeCallback, loopback=true, interval = 100) {
+  addObservable(name, callback, errCallback, completeCallback, interval = 100) {
     if(!this.watchdogs[name]) {
       let subscribeCallback = (intervalTime) => {
         if(this.jobQueue.length > 0) {
           let currJob = this.takeJob();
           callback(currJob);
-          if(loopback) {
+          if(currJob.loopback) {
             this.addJob(currJob);
           }
         }
@@ -50,7 +59,7 @@ class JobQueue {
 }
 
 class Job {
-  constructor(pName, pTask, pCallback) {
+  constructor(pName, pTask, pCallback, pIdentifier, pLoopback) {
     this.name = pName;
     this.storedTask = pTask;
     this.task = (...args) => { 
@@ -64,6 +73,8 @@ class Job {
     };
     this.callback = pCallback;
     this.numPolls = 0;
+    this.identifier = pIdentifier;
+    this.loopback = (pLoopback === undefined ? pLoopback : false);
     this.lastResult;
   }
 
