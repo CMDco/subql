@@ -207,40 +207,39 @@ function triggerType(typename, resolverResult) {
 };
 
 function queryFilter(resolverResult, clientObj) {
+  let {list, matchedResolver} = determineList_Resolver(resolverResult, clientObj);
+  let retObjectTemplate;
+  let retObjFill;
+  if (list) {
+    retObjectTemplate = {};
+    retObjFill = retObjectTemplate;
+  } else { 
+    retObjectTemplate = { data: {} };
+    retObjectTemplate.data[matchedResolver] = {};
+    retObjFill = retObjectTemplate.data[matchedResolver];
+  } 
+  let fields = clientObj.operationFields[matchedResolver];
+  nestedQueryHelper(fields, resolverResult, retObjFill);
+  return retObjectTemplate;
+}
+// function name can be changed to be more relavent 
+function determineList_Resolver(resolverResult, clientObject) { 
   let typeOfObj = resolverResult.constructor.name;
-  let resolverNames = Object.keys(clientObj.operationFields);
-  let matchedResolver;
+  let resolverNames = Object.keys(clientObject.operationFields);
   let list = false;
+  let matchedResolver;
   resolverNames.forEach((resolver) => {
     if (operations[resolver].value === typeOfObj && operations[resolver].kind === "NamedType") {
-      matchedResolver = resolver;
+     matchedResolver = resolver;
     } else if(operations[resolver].value === typeOfObj){ 
-      matchedResolver = resolver;
+     matchedResolver = resolver;
       list = true;
     }
   });
-  let retObjectTemplate = { data: {} };
-  retObjectTemplate.data[matchedResolver] = {};
-  if (list) retObjectTemplate = {}
-  let fields = clientObj.operationFields[matchedResolver];
-  fields.forEach((field) => {
-    if (typeof field === 'object') { 
-      let key = Object.keys(field)[0];
-      if (!Array.isArray(resolverResult[key])) {
-        if(list) retObjectTemplate[key] = nestedQueryHelper(field[key], resolverResult[key], {});
-        else retObjectTemplate.data[matchedResolver][key] = nestedQueryHelper(field[key], resolverResult[key], {});
-      } else { 
-        if(list) retObjectTemplate[key] = resolverResult[key].map(ele => nestedQueryHelper(field[key], ele, {}));
-        else retObjectTemplate.data[matchedResolver][key] = resolverResult[key].map(ele => nestedQueryHelper(field[key], ele, {}));
-      }
-    } else {
-      if (list) retObjectTemplate[field] = resolverResult[field];
-      else retObjectTemplate.data[matchedResolver][field] = resolverResult[field]; 
-    }
-  });
-  return retObjectTemplate;
+  return { list, matchedResolver };
 }
-
+// name may need to be changed since it works in general 
+// handles the entire query filtering process
 function nestedQueryHelper(fieldArray, resolverObj, resultObj) { //TODO can we possibly refactor with similar code in query filter
   fieldArray.forEach((key) => {
     if(typeof key === 'object') {
