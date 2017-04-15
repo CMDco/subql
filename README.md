@@ -1,6 +1,8 @@
 # SubQL
 SubQL enables real time data subscriptions to GraphQL APIs. 
 
+Note from the [Author](https://github.com/Martin-Ting): On March 6, the specification for GraphQL Subscriptions was merged into the official RFC for GraphQL. The GraphQL-js library should be updated soon with this functionality. As small as this open source project is for realtime GraphQL, even with all it's caveats and lack of support, it was great fun tackling this problem. The guys over on the Apollo team have also done a lot of great work with realtime GraphQL so check out that project too. @stubailo from the Apollo team released a great [article](https://dev-blog.apollodata.com/the-next-step-for-realtime-data-in-graphql-b564b72eb07b) about this. 
+
 [![npm version](https://badge.fury.io/js/subql.svg)](https://badge.fury.io/js/subql)
 
 ## Installation
